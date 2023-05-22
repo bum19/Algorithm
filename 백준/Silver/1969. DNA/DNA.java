@@ -3,7 +3,7 @@ import java.util.Scanner;
 public class Main{
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         int n,m,hd=0;
 
         n = sc.nextInt();
@@ -51,7 +51,7 @@ public class Main{
             if(idx ==3) sb.append("T");
         }
 
-        System.out.println(sb.toString());
+        System.out.println(sb);
         System.out.println(hd);
 
     }
