@@ -15,12 +15,9 @@ public class Main {
 		int start = k-1;
 		int idx = 0;
 		for(int i = 0; i < n; i++) {
-//			System.out.println("start : "+start+", cq.size() : "+cq.size());
 			output[i] = cq.remove(start);
-			start = (start+k-1);
-			while(!cq.isEmpty() &&start >= cq.size()){
-				start -= cq.size();
-			}
+			if(!cq.isEmpty())
+				start = (start-1+k)%cq.size();
 		}
 		
 		for(int i = 0; i < n; i++) {
@@ -33,3 +30,4 @@ public class Main {
 		
 	}
 }
+
