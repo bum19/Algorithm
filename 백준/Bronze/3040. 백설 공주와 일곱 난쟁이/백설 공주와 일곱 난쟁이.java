@@ -1,4 +1,3 @@
-
 //메모리:
 //실행시간
 import java.io.*;
@@ -21,6 +20,7 @@ public class Main {
 				if(arr[i] + arr[j] == num) {
 					isNot7nanjeng[i] = true;
 					isNot7nanjeng[j] = true;
+                    break;
 				}
 			}
 		}
