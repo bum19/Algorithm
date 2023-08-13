@@ -1,52 +1,44 @@
-import java.util.*;
 import java.io.*;
-
+import java.util.*;
 public class Solution {
-
-	public static int n;
-	public static Queue<Integer> q = new LinkedList<>();
-	public static StringBuilder sb = new StringBuilder();
-	
-	public static void main(String[] args) {
-		Scanner sc = new Scanner(System.in);
+	static int t;
+	static Queue<Integer> q = new ArrayDeque<Integer>();
+	public static void main(String[] args) throws IOException{
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+		StringBuilder sb= new StringBuilder();
+		StringTokenizer st;
 		
-		for(int t = 1; t <= 10; t++) {
-			//입력시작
-			n = sc.nextInt();
-			for(int i = 0 ; i < 8; i++) {
-				q.offer(sc.nextInt());
-
+		for(int test_case = 1; test_case <= 10; test_case++) {
+			//입력
+			br.readLine();
+			st = new StringTokenizer(br.readLine());
+			for(int i = 0; i < 8; i++) {
+				q.offer(Integer.parseInt(st.nextToken()));
 			}
-//			System.out.println(Arrays.toString(q.toArray()));
-			//입력끝
 			
-			//8자리 숫자값 만들기
-			int dec = 0;
+			//0되는거 생길때까지 돌리기
+			int i = 0;
 			while(true) {
-				int temp = q.poll();
-				temp -= (dec+1);
-				if(temp <= 0) {
-					temp = 0;
-					q.offer(temp);
-					break;
-				}
-				else {
-					q.offer(temp);
-				}
-//				System.out.println(Arrays.toString(q.toArray()));
-				dec++;
-				dec %= 5;
+				int num = q.poll() - (i+1);
+				if(num < 0 ) num = 0;
+				q.offer(num);
+				
+				if(num == 0) break;
+				
+				i = ++i % 5;
 			}
 			
-			sb.append("#").append(t).append(" ");
-			for(int i = 0 ; i < 8; i++) {
-				sb.append(q.poll()).append(" ");
-			}
+			sb.append("#").append(test_case).append(" ");
+			while(!q.isEmpty()) sb.append(q.poll()).append(" ");
 			sb.append("\n");
 			
 		}
 		
-		System.out.println(sb);
+		bw.append(sb);
+		bw.flush();
 		
+		bw.close();
+		br.close();
 	}
 }
