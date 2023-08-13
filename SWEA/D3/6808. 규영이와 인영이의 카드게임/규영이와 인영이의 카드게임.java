@@ -1,61 +1,71 @@
-//메모리 :  
-//실행시간 : 
-import java.util.*;
+
 import java.io.*;
+import java.util.*;
 public class Solution {
-//	public static int kyScore, iyScore;
-	public static int[] kyCards = new int[9];
-	public static int[] nonSelectIyCards = new int[9];
-	public static int[] iyCards = new int[9];
-	public static boolean[] isSelected = new boolean[9];
-	public static boolean[] isKyCard = new boolean[18];
-	public static int t,winCnt, loseCnt;
-	public static StringBuilder sb = new StringBuilder();
-	
-	
+	public static int t, winCnt, loseCnt, totalScore = 18*19/2, cnt;
+	public static boolean[] isKyCard;	//1~18중 규영이 카드 확인.
+	public static int[] kyCard;			//규영 카드
+	public static int[] iyCard; 		//인영 카드 저장
+	public static boolean[] isSelected; //인영이 카드중 선택되었는지 확인
+	public static int[] currentIyCard; //현재 고른 인영이 카드
 	public static void main(String[] args) throws IOException{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+		StringBuilder sb = new StringBuilder();
 		StringTokenizer st;
-		t = Integer.parseInt(br.readLine());
+		int tmp;
 		
+		
+		kyCard = new int[9];
+		iyCard = new int[9];
+		currentIyCard = new int[9];
+		
+		t = Integer.parseInt(br.readLine().trim());
 		for(int test_case = 1; test_case <= t; test_case++) {
-			isSelected = new boolean[9];
-			isKyCard = new boolean[18];
+			//초기화
+			isKyCard = new boolean[18]; //인덱스를 카드값이랑 맞추기위해 1추가해서 선언
+			isSelected = new boolean[9]; //인덱스를 카드위치랑 맞추기위해 1추가해서 선언
 			winCnt = 0;
 			loseCnt = 0;
 			
-			st = new StringTokenizer(br.readLine());
-			for(int i = 0; i < 9; i++) {
-				int tmp = Integer.parseInt(st.nextToken());
-				isKyCard[tmp-1] = true;
-			}
-			
-			int kyIdx =0, iyIdx = 0;
-			for(int i = 0; i < 18; i++) {
-				if(isKyCard[i]) kyCards[kyIdx++] = i+1;
-				else nonSelectIyCards[iyIdx++] = i+1;
-			}
-			
-			dfs(0);
-			sb.append("#").append(test_case).append(" ").append(winCnt).append(" ").append(loseCnt).append("\n");
+			//규영이 카드 입력
+			 st = new StringTokenizer(br.readLine());
+			 for(int i = 0; i < 9; i++) {
+				 tmp = Integer.parseInt(st.nextToken());
+				 isKyCard[tmp-1] = true;
+				 kyCard[i] = tmp; 
+			 }
+			 
+			 //인영이 카드 넣기
+			 int idx = 0;
+			 for(int i = 0; i < 18; i++) {
+				 if(!isKyCard[i]) iyCard[idx++] = i+1;
+			 }
+			 
+			 
+			 //완전탐색으로 해결
+			 dfs(0);
+			 		 
+			 sb.append("#").append(test_case).append(" ").append(winCnt).append(" ").append(loseCnt).append("\n");
 		}
 		System.out.println(sb);
+		
 	}
 	
-	public static void dfs(int cnt) {
-		if(cnt == 9) {
-			int kyScore =0;
-			int iyScore =0;
+	public static void dfs(int depth) {
+		if(depth == 9) {
+			//게임시작
+			int kyScore = 0, iyScore = 0;
 			for(int i = 0; i < 9; i++) {
-				if(kyCards[i] > iyCards[i]) {
-					kyScore += kyCards[i]+iyCards[i];
+				if(kyCard[i] > currentIyCard[i]) {
+					kyScore += kyCard[i] + currentIyCard[i];
 				}
 				else {
-					iyScore += kyCards[i]+iyCards[i];
+					iyScore += kyCard[i] + currentIyCard[i];
 				}
 			}
-			if(kyScore > iyScore) winCnt++;
-			else if(kyScore < iyScore) loseCnt++;
+			if( kyScore > iyScore) winCnt++;
+			else if( iyScore > kyScore) loseCnt++;
 			
 			return;
 		}
@@ -63,8 +73,8 @@ public class Solution {
 		for(int i = 0; i < 9; i++) {
 			if(!isSelected[i]) {
 				isSelected[i] = true;
-				iyCards[cnt] = nonSelectIyCards[i];
-				dfs(cnt+1);
+				currentIyCard[depth] = iyCard[i];
+				dfs(depth+1);
 				isSelected[i] = false;
 			}
 		}
