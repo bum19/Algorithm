@@ -1,16 +1,16 @@
-//
+
 import java.io.*;
 import java.util.*;
 
 public class Solution {
-	public static int t, m, a;
-	public static int[] aMove;
-	public static int[] bMove;
-	public static int[][] bc; // [0][0]~[0][3] 각각 x좌표, y좌표, 충전범위, 성능
-	public static boolean[] isBcExistOnA; // 해당 충전기가 존재하는지
-	public static boolean[] isBcExistOnB; // 해당 충전기가 존재하는지
-	public static int[] dy = { 0, -1, 0, 1, 0 }; // 정지 상우하좌
-	public static int[] dx = { 0, 0, 1, 0, -1 }; // 정지 상우하좌
+	public static int t, m, a, totalCharge;
+	public static int[] aMove; // a움직임 기록.
+	public static int[] bMove; // b움직임 기록
+	public static int[][] bc; // 배터리정보. x좌표,y좌표,충전범위,성능
+	public static boolean[] isBCOnA; // bc가 a위에있는지 체크
+	public static boolean[] isBCOnB; // bc가 b위에있는지 체크
+	public static int[] dy = { 0, -1, 0, 1, 0 }; // 정지, 상우하좌
+	public static int[] dx = { 0, 0, 1, 0, -1 }; // 정지, 상우하좌
 
 	public static void main(String[] args) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -20,30 +20,25 @@ public class Solution {
 		t = Integer.parseInt(br.readLine().trim());
 
 		for (int test_case = 1; test_case <= t; test_case++) {
-			// 입력시작
-			st = new StringTokenizer(br.readLine()); //
-			m = Integer.parseInt(st.nextToken()); //
-			a = Integer.parseInt(st.nextToken());
-			aMove = new int[m+1]; //0~m까지 탐색
-			bMove = new int[m+1]; //0~m까지 탐색
-			bc = new int[a][4];
-			isBcExistOnA = new boolean[a];
-			isBcExistOnB = new boolean[a];
-
-			//a이동 입력
 			st = new StringTokenizer(br.readLine());
-			for (int i = 1; i <= m; i++) { //0초엔 가만히있기
+			m = Integer.parseInt(st.nextToken());
+			a = Integer.parseInt(st.nextToken());
+
+			aMove = new int[m + 1];
+			bMove = new int[m + 1];
+			bc = new int[a][4];
+			totalCharge = 0;
+			st = new StringTokenizer(br.readLine());
+			for (int i = 1; i <= m; i++) { // a움직임 정보 입력
 				aMove[i] = Integer.parseInt(st.nextToken());
 			}
 			
-			//b이동 입력
 			st = new StringTokenizer(br.readLine());
-			for (int i = 1; i <= m; i++) { //0초엔 가만히있기
+			for (int i = 1; i <= m; i++) { // b움직임 정보 입력
 				bMove[i] = Integer.parseInt(st.nextToken());
 			}
 
-			//충전기 입력
-			for (int i = 0; i < a; i++) {
+			for (int i = 0; i < a; i++) {// 충전기정보입력. x,y좌표,길이,성능
 				st = new StringTokenizer(br.readLine());
 				bc[i][0] = Integer.parseInt(st.nextToken());
 				bc[i][1] = Integer.parseInt(st.nextToken());
@@ -51,69 +46,64 @@ public class Solution {
 				bc[i][3] = Integer.parseInt(st.nextToken());
 			}
 
-			// bc 성능 큰 순으로 정렬.
-			Arrays.sort(bc, (a1, a2) -> {
-				return (a1[3] - a2[3]) * -1;
+			// bc 성능 큰순으로 정렬
+			Arrays.sort(bc, (bc1, bc2) -> {
+				return Integer.compare(bc1[3], bc2[3]) * -1;
 			});
-//			System.out.println(Arrays.deepToString(bc));
-			// 입력끝
-			
-			//구현. 각 칸마다 충전값 구하기
-			int ax = 1, ay = 1, bx = 10, by = 10, sum = 0 ;
-			for (int i = 0; i <= m; i++) { //처음상태부터 총 m+1 탐색
-				//이동
-				ax = ax + dx[aMove[i]];
-				ay = ay + dy[aMove[i]];
-				bx = bx + dx[bMove[i]];
-				by = by + dy[bMove[i]];
-//				System.out.println("(ax, ay): ("+ax+", "+ay+"), (bx, by): ("+bx+", "+by+")");
-				//충전기 있는지 확인
-				boolean isChargableA = false;
-				boolean isChargableB = false;
-				for(int j = 0; j < a; j++) {
-					if( Math.abs(ax- bc[j][0]) + Math.abs(ay - bc[j][1]) <= bc[j][2]) {
-						isChargableA = true;
-						isBcExistOnA[j] = true; 
-					}
-					if( Math.abs(bx- bc[j][0]) + Math.abs(by - bc[j][1]) <= bc[j][2]) {
-						isChargableB = true;
-						isBcExistOnB[j] = true;
-					}
-				}
-				//a혼자 충전기 2개먹을때.
-				//충전기 상위 2개까지 더함.
-				//충전기 1개일경우 그냥 그것만더함
-				//충전개 2개일경우 2개까지더함.
-				//a가 2개, b가 1개일경우. 가장큰거겹치면 하나더하고, 그다음큰거가진사람꺼 더하기.
-				int currentChargenum = 0;
-				for(int j = 0; j < a; j++) {
-					if(currentChargenum ==2) break;
-					//둘이 충전기 겹치면 일단 하나만 더함.
-					if(isBcExistOnA[j] && isBcExistOnB[j]) {
-						sum += bc[j][3];
-						currentChargenum++;
-					}
-					else if (isBcExistOnA[j] && isChargableA) {
-						sum += bc[j][3];
-						isChargableA = false;
-						currentChargenum++;
-					}
-					else if (isBcExistOnB[j] && isChargableB) {
-						sum += bc[j][3];
-						isChargableB = false;
-						currentChargenum++;
-					}
-				}
-//				System.out.println(i+" : "+sum+", "+Arrays.toString(isBcExist));
-				//충전기 존재여부 초기화
-				Arrays.fill(isBcExistOnA, false);
-				Arrays.fill(isBcExistOnB, false);
+
+			int[] a = { 1, 1 };
+			int[] b = { 10, 10 };
+			for (int i = 0; i <= m; i++) {
+				a[0] += dx[aMove[i]];
+				a[1] += dy[aMove[i]];
+
+				b[0] += dx[bMove[i]];
+				b[1] += dy[bMove[i]];
+				charge(a[0], a[1], b[0], b[1]);
 			}
-			//출력저장.
-			sb.append("#").append(test_case).append(" ").append(sum).append("\n");
+
+			sb.append("#").append(test_case).append(" ").append(totalCharge).append("\n");
 		}
-		
-		System.out.println(sb);
+		System.out.print(sb);
 	}
 
+	private static void charge(int ax, int ay, int bx, int by) {
+		boolean isAChargable = false, isBChargable = false; //충전기위에 있는지 체크.
+		isBCOnA = new boolean[a];
+		isBCOnB = new boolean[a];
+
+		// 충전기 위에있는지 확인
+		for (int i = 0; i < a; i++) {
+			if (Math.abs(bc[i][0] - ax) + Math.abs(bc[i][1] - ay) <= bc[i][2]) {
+				isBCOnA[i] = true;
+				isAChargable = true;
+			}
+			if (Math.abs(bc[i][0] - bx) + Math.abs(bc[i][1] - by) <= bc[i][2]) {
+				isBCOnB[i] = true;
+				isBChargable = true;
+			}
+		}
+		// 충전. 둘이 겹치면 a에 넣기. 2개 모이면 중간에끝내기
+		int chargeCnt = 1;
+		if(isAChargable && isBChargable) chargeCnt = 2; //둘다 충전기위에있으면 최대 2개까지 충전가능
+		else 							 chargeCnt = 1; //그렇지않다면 최대 1개까지 충전가능
+		for (int i = 0; i < a; i++) {
+			if(chargeCnt == 0) break;
+			if(isBCOnA[i] && isBCOnB[i] && isAChargable && isBChargable) { //큰거부터 둘이 같이 위에있으면 무조건 더함.
+				totalCharge += bc[i][3];
+				chargeCnt--;
+			}
+			else if(isBCOnA[i] && isAChargable) { //a위에있고 a충전가능하면 더함. 위에꺼는 b꺼라 치면됨.
+				totalCharge += bc[i][3];
+				isAChargable = false; 	//확실하게 a충전했으므로 이제 충전 못함.
+				chargeCnt--;
+			}
+			else if(isBCOnB[i] && isBChargable) { //b위에 있으면 더함. 위에더한건 a꺼라 치면됨.
+				totalCharge += bc[i][3];
+				isBChargable = false; //확실하게 b충전했으므로 이제 b 충전 못함
+				chargeCnt--;
+			}
+			
+		}
+	}
 }
