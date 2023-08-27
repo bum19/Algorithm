@@ -1,13 +1,13 @@
 //
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 public class Solution {
-	public static int t, n, maxCore, minLength;
-	public static int[][] arr;
+	public static int t, n, maxCore, minDist;
+	public static int[][] board;
 	public static List<int[]> cores;
-	public static int[] dy = { 0, -1, 1, 0, 0 }; // 연결x, 상하좌우 전선연결
-	public static int[] dx = { 0, 0, 0, -1, 1 }; // 연결x, 상하좌우 전선연결
+	public static int[] dy = { -1, 1, 0, 0 }; // 상하좌우
+	public static int[] dx = { 0, 0, -1, 1 }; // 상하좌우
 
 	public static void main(String[] args) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -17,87 +17,92 @@ public class Solution {
 		t = Integer.parseInt(br.readLine().trim());
 
 		for (int test_case = 1; test_case <= t; test_case++) {
-
+			// 입력
 			n = Integer.parseInt(br.readLine().trim());
-			arr = new int[n][n];
+			board = new int[n + 1][n + 1]; // 격자판이 1부터시작.
 			cores = new ArrayList<int[]>();
+			maxCore = 0;
+			minDist = Integer.MAX_VALUE;
 
-			for (int i = 0; i < n; i++) {
+			for (int i = 1; i <= n; i++) {
 				st = new StringTokenizer(br.readLine());
-				for (int j = 0; j < n; j++) {
-					arr[i][j] = Integer.parseInt(st.nextToken());
-					if (arr[i][j] == 1 && i > 0 && i < n - 1 && j > 0 && j < n - 1)
-						cores.add(new int[] { i, j }); // 벽에안붙어있는 코어만 추가.
+				for (int j = 1; j <= n; j++) {
+					board[i][j] = Integer.parseInt(st.nextToken());
+					if (board[i][j] == 1 && i >= 1 && j >= 1 && j <= n && j <= n) {
+						cores.add(new int[] { i, j });
+					}
 				}
 			}
-			maxCore = 0;
-			minLength = Integer.MAX_VALUE;
+			// 입력끝
 
 			dfs(0, 0, 0);
-			
-			// 출력저장.
-			sb.append("#").append(test_case).append(" ").append(minLength).append("\n");
+
+			sb.append("#").append(test_case).append(" ").append(minDist).append("\n");
 		}
 		System.out.println(sb);
 	}
 
-	// 5^(코어개수)만큼탐색. 단 길이가 길어지면 탐색중단. 전선이 겹치면 탐색중단.
-	private static void dfs(int depth, int curCore, int curLength) {
-//		System.out.println("dfscall. depth :"+depth+", curCore : "+curCore+", curLength : "+curLength);
-		//현재 코어 개수가 같은데, 현재 길이가 minLength보다 길어도, 코어개수가 늘어날수있잖아
-		
-		//코어개수가 maxCore를 넘을 가능성조차 없을때,
-		if (curCore + cores.size()-depth < maxCore) {
-			return;
-		}
-		
-		//코어개수가 maxCore와 같아질 가능성은 있는데, 이미 길이가 더 길때
-		else if(curCore + cores.size()- depth == maxCore && curLength >= minLength) {
-			return; // 현재코어개수가 적거나같은데 길이가 더 길어지면 탐색 중단.
-		}
+	public static void dfs(int cnt, int curCore, int dist) {
 
-		if (depth == cores.size()) { // 코어 한번씩 탐색했다면
+		// 가지치기. 현재코어개수 + cores.size() - cnt가 maxCore보다 작으면 탈출.
+		if(curCore + (cores.size() - cnt) < maxCore) return;
 
-			if (curCore == maxCore) { // 코어개수가 같다면
-				minLength = minLength>curLength?curLength:minLength;
-
-			} else if (curCore > maxCore) { // 현재 코어가 더 많다면
-				maxCore = curCore;
-				minLength = curLength;
-			}
-			return;
-		}
-
-		for (int dir = 0; dir < 5; dir++) {
-
-			if (dir == 0)
-				dfs(depth + 1, curCore, curLength);
-			else {
-				int ny = cores.get(depth)[0] + dy[dir];
-				int nx = cores.get(depth)[1] + dx[dir];
-				boolean isAvailable = true;
-				int length = 0;
-				// 선연결. 연결중에 프로세서나 다른 간선 만나면 실패. 복구.
-				while (ny >= 0 && nx >= 0 && ny < n && nx < n) {
-					if (++arr[ny][nx] >= 2)
-						isAvailable = false;
-					length++;
-					ny += dy[dir];
-					nx += dx[dir];
+		// cnt가 코어개수가 되면 탈출. 코어개수가 더 적으면 그냥종료.
+		if (cnt == cores.size()) {
+			if (maxCore > curCore) //현재 코어개수가 더 적다면
+				return;
+			else if(maxCore < curCore) { //현재 코어개수가 더 많다면
+					maxCore = curCore;
+					minDist = dist;
+					return;
 				}
-				// 선연결 성공하면 탐색 이어가기.
-				if (isAvailable)
-					dfs(depth + 1, curCore + 1, curLength + length);
-				// 선연결 성공하던 실패하던, 복구
-				ny = cores.get(depth)[0] + dy[dir];
-				nx = cores.get(depth)[1] + dx[dir];
-				while (ny >= 0 && nx >= 0 && ny < n && nx < n) {
-					arr[ny][nx]--;
-					ny += dy[dir];
-					nx += dx[dir];
-				}
+			else { //현재 코어개수와 maxCore값이 같다면
+				if (minDist > dist)
+					minDist = dist;
+				return;
 			}
 		}
 
+		// 코어에 전선 연결하기
+		// 아예 연결안하는경우
+		dfs(cnt + 1, curCore, dist);
+		// 4방연결하는경우
+		for (int dir = 0; dir < 4; dir++) {
+			// 방향에따라 연결.
+			boolean isCross = false; // 전선 교차되는지 확인.
+			int tempDist = 0;
+			
+			int ny = cores.get(cnt)[0] + dy[dir];
+			int nx = cores.get(cnt)[1] + dx[dir];
+			
+			while (true) { // 전선이 끝에닿을때까지 연결.
+				if (ny <= 0 || nx <= 0 || ny > n || nx > n)	break; // 끝까지 갔으면 반복 종료.
+				
+				board[ny][nx] += 2; //방문처리를 2더한걸로 진행.
+				tempDist++; //전선길이 1 증가.
+				
+				if (board[ny][nx] != 2) isCross = true; //2더했는데 2가아니면 이미 코어가있거나 전선이 깔린것임.
+				
+				ny += dy[dir];
+				nx += dx[dir];
+			}
+
+			if (!isCross) { // 잘 안겹치고 연결된다면 게속탐색
+				dfs(cnt + 1, curCore + 1, dist + tempDist);
+			}
+
+			// 탐색후 전선 복구
+			ny = cores.get(cnt)[0] + dy[dir];
+			nx = cores.get(cnt)[1] + dx[dir];
+			while (true) { // 전선이 끝에닿을때까지 연결.
+				if (ny <= 0 || nx <= 0 || ny > n || nx > n)	break; // 끝까지 갔으면 반복 종료.
+				
+				board[ny][nx] -= 2; //2 다시 빼면서 복구 진행.
+				
+				ny += dy[dir];
+				nx += dx[dir];
+			}
+		} // 방향에따른 호출 종료.
 	}
+
 }
