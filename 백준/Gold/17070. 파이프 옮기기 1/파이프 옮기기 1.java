@@ -1,9 +1,10 @@
+//처음에 시간초과.
+//399648kb, 832ms 큐에넣기전에 불가능한곳은 큐에 안넣는식으로 코드 수정했더니 통과 
 //
 import java.io.*;
 import java.util.*;
 public class Main {
-	public static int n, answer;
-	public static int cnt;
+	public static int n;
 	public static int[][] home;
 	public static int[] dy = {0,1,1}; //우, 하, 우하
 	public static int[] dx = {1,0,1}; //우, 하, 우하
@@ -23,21 +24,20 @@ public class Main {
 			}
 		}//입력끝
 		
-		bfs(); //파이프 끝지점, 파이프 상태 (0 : 가로, 1 ; 세로, 2 ; 대각선)
-		System.out.println(answer);
-//		System.out.println(cnt);
+//		bfs(); //파이프 끝지점, 파이프 상태 (0 : 가로, 1 ; 세로, 2 ; 대각선)
+//		System.out.println(bfs());
+		System.out.println(getCntByDP());
 	}
 	
-	private static void bfs(){
-		
+	//완탐풀이
+	private static int bfs(){
+		int answer = 0;
 		Queue<int[]> q = new ArrayDeque<int[]>();
 		
 		q.offer(new int[] {1,2,0}); //  y좌표, x좌표, 파이프상태.
 		
 		while(!q.isEmpty()) {
-			cnt++;
 			int[] cur = q.poll();
-//			System.out.println("("+cur[0]+", "+cur[1]+")");
 			if(cur[0] == n && cur[1] == n) { //n,n도착하면 해당 파이프로 하는 탐색종료.
 				answer++;
 			}
@@ -53,7 +53,24 @@ public class Main {
 			}
 			
 		}
+		return answer;
+	}
+	
+	//dp풀이
+	private static int getCntByDP() {
+		int[][][] dp = new int[n+1][n+1][3]; //dp[i][j][k]는 (i,j)칸에 k모양으로 들어오는 경우.
+		dp[1][2][0] = 1;
 		
+		for(int i = 1 ; i <= n; i++) {
+			for(int j = 1; j <= n; j++) { //열 정보는 3부터 보면된다. 열이 2까지는 전부 0임
+				if(home[i][j] == 1) continue; //벽으로 들어가는 경우는 없다.
+				dp[i][j][0] += dp[i][j-1][2] + dp[i][j-1][0];
+				dp[i][j][1] += dp[i-1][j][2] + dp[i-1][j][1];
+				if(home[i-1][j] != 1 && home[i][j-1] != 1) //대각선으로 들어올 경우, 옆에 1을 스치는지 확
+					dp[i][j][2] += dp[i-1][j-1][2] + dp[i-1][j-1][1] + dp[i-1][j-1][0];
+			}
+		}
 		
+		return dp[n][n][0] + dp[n][n][1] + dp[n][n][2];
 	}
 }
