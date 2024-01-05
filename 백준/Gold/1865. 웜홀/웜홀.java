@@ -1,112 +1,89 @@
 import java.io.*;
-import java.util.*;
-
-//음의 사이클이 존재한다면, 참. -> 웜홀나오는곳에서 들어오는곳으로 경로 있나 확인, 경로길이가 음수면 yes
-//-> 벨만포드로 음의사이클 확인.
-//아니면, 거짓
-//같은방향에 대해서 도로정보는 최솟값만입력받아도됨.
-//지점 중복방문 가능.
+import java.util.ArrayList;
+import java.util.Arrays;
+//이동재 학우의 코드를 수정
 public class Main {
+    static class Node {
+        int from, weight;
 
-	public static final int INF = Integer.MAX_VALUE;
-	public static int[] dist;
-	public static int[][] adjs;
-	public static List<Edge> edges;
-	public static List<Integer> warmHoles;
-	public static int t,n,m,w;
-	public static boolean isPossible;
-	public static void main(String[] args) throws IOException{
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		StringBuilder sb = new StringBuilder();
-		StringTokenizer st;
-		//input
-		t = Integer.parseInt(br.readLine().trim());
-		for(int testCase = 1; testCase <= t; testCase++) {
-			st = new StringTokenizer(br.readLine());
-			n = Integer.parseInt(st.nextToken());
-			m = Integer.parseInt(st.nextToken());
-			w = Integer.parseInt(st.nextToken());
-			
-			dist = new int[n+1];
-			Arrays.fill(dist, INF);
-			adjs = new int[n+1][n+1];
-			for(int i = 1; i<=n; i++) {
-				Arrays.fill(adjs[i], INF);
-			}
-			edges = new ArrayList<Edge>();
-			warmHoles = new ArrayList<Integer>();
-			for(int i = 0; i < m; i++) {
-				st = new StringTokenizer(br.readLine());
-				int start = Integer.parseInt(st.nextToken());
-				int end = Integer.parseInt(st.nextToken());
-				int time = Integer.parseInt(st.nextToken());
-				
-				if(adjs[start][end] > time) adjs[start][end] = time;
-				if(adjs[end][start] > time) adjs[end][start] = time;
-			}
-			
-			for(int i = 0; i < w; i++) {
-				st = new StringTokenizer(br.readLine());
-				int start = Integer.parseInt(st.nextToken());
-				int end = Integer.parseInt(st.nextToken());
-				int time = Integer.parseInt(st.nextToken());
-				if(adjs[start][end] > time * -1) {
-					adjs[start][end] = time * -1;
-					warmHoles.add(end);
-				}
-			}
-			
-			//edge input
-			for(int i = 1; i <= n; i++) {
-				for(int j =1 ; j<=n; j++) {
-					if(adjs[i][j] != INF) {
-						edges.add(new Edge(i,j,adjs[i][j]));
-					}
-				}
-			}
-			//input done
+        public Node(int from, int weight) {
+            this.from = from;
+            this.weight = weight;
+        }
+    }
 
-			
-			//1. 웜홀 나오는 부분에 대해 bf실행. 음수사이클 생길수 있 모든 곳 확인가능 : 시간복잡도V*E*W = 2억5천
-			//2. 연결안된 노드가 있을수 있음.union-find로 체크한뒤, parent 값에 한해서 체크
-			
-			//1번방법
-			for(int warmHole : warmHoles) {
-				if(isPossible = bf(warmHole)) break;
-			}
-			
-			if(isPossible) sb.append("YES\n");
-			else sb.append("NO\n");
-		}
-		System.out.println(sb);
-	}
-	
-	private static boolean bf(int start) {
-		dist[start] = 0;
-		
-		for(int i = 1; i <=n; i++) { //
-			for(int j = 0; j < edges.size(); j++) {
-				Edge edge = edges.get(j);
-				if(dist[edge.n1] != INF && dist[edge.n2] > dist[edge.n1]+ edge.dist) {
-					dist[edge.n2] = dist[edge.n1] + edge.dist;
-					if(i == n) return true; //음수사이클 존재하면 가능
-				}
-			}
-		}
-		return false;
-	}
-	
+    static int T, N, M, W;
+    static ArrayList<Node> roads[];
+    static final int INF = 100000000;
+    static int dis[];
 
-	
-	static class Edge{
-		int n1,n2,dist;
-		Edge(int n1, int n2, int dist){
-			this.n1 = n1;
-			this.n2 = n2;
-			this.dist = dist;
-		}
-		public String toString() {
-			return n1+","+n2+" : "+ dist;
-		}
-	}
+    public static void main(String[] args) throws Exception {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        T = Integer.parseInt(br.readLine());
+
+        while (T-- > 0) {
+            String[] s = br.readLine().split(" ");
+            N = Integer.parseInt(s[0]);
+            M = Integer.parseInt(s[1]);
+            W = Integer.parseInt(s[2]);
+
+            roads = new ArrayList[N + 1];
+            dis = new int[N + 1];
+
+            for (int i = 1; i <= N; i++) {
+                roads[i] = new ArrayList<Node>();
+            }
+
+            for (int i = 0; i < M; i++) {
+                s = br.readLine().split(" ");
+
+                int a = Integer.parseInt(s[0]);
+                int b = Integer.parseInt(s[1]);
+                int wei = Integer.parseInt(s[2]);
+
+                roads[a].add(new Node(b, wei));
+                roads[b].add(new Node(a, wei));
+
+            }
+
+            for (int i = 0; i < W; i++) {
+                s = br.readLine().split(" ");
+                int a = Integer.parseInt(s[0]);
+                int b = Integer.parseInt(s[1]);
+                int wei = Integer.parseInt(s[2]);
+                roads[a].add(new Node(b, -wei));
+            }
+            boolean flag = false;
+
+
+            if (bf()) {
+                flag = true;
+            }
+
+            System.out.println(flag ? "YES" : "NO");
+        }
+
+
+    }
+
+
+    //기존 BF에서 INF체크를 뺀 형태. 그냥 사이클만 확인하고, 단절그래프의 경우에도 확인할 수 있음.
+    private static boolean bf() {
+        //이게 한 정점에서 체크하는 경우임.
+        Arrays.fill(dis, INF);
+        for(int i = 1; i <=N; i++) { //최악의 경우 N-1번동안 갱신이 일어남.
+            //모든 엣지순회해서 갱신
+            for (int j = 1; j <= N; j++) {
+                for (Node n : roads[j]) {
+                    if (dis[n.from] > n.weight + dis[j]) {
+                        dis[n.from] = dis[j] + n.weight;
+                        //만약 N-1번 이후 또 갱신되는상황이있다? 음수임
+                        if (i == N) return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }
