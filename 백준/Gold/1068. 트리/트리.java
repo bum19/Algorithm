@@ -1,52 +1,61 @@
 import java.io.*;
 import java.util.*;
-//자식노드가 3개 이상일 수 있다.
+//김진용식 풀이
 public class Main {
-	public static int n, killNode;
-	public static int[] parents;
-	public static boolean[] isParentNode;
-	public static boolean[] isErased;
+	public static List<Integer>[] children;
+	public static int n, eraseNum, answer;
 	public static void main(String[] args) throws IOException{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		StringBuilder sb = new StringBuilder();
 		StringTokenizer st;
-
+		
 		n = Integer.parseInt(br.readLine());
+		children = new List[n];
+		for(int i = 0; i < n; i++) {
+			children[i] = new ArrayList<Integer>();
+		}
 		
 		st = new StringTokenizer(br.readLine());
-		parents = new int[n];
-		for(int i = 0; i < n; i++) {
-			parents[i] = Integer.parseInt(st.nextToken());			
+		
+		int root = -99;
+		for(int i = 0 ; i <n ; i++) {
+			int child = i;
+			int parent = Integer.parseInt(st.nextToken());
+			if(parent == -1) root = i;
+			else			children[parent].add(child);
 		}
 		
-		killNode = Integer.parseInt(br.readLine());
+		eraseNum = Integer.parseInt(br.readLine());
+		erase(root, eraseNum);
+		children[eraseNum].clear();
 		
-		isParentNode =  new boolean[n];
-		isErased = new boolean[n];
-		
-		erase(killNode);
-		
-		for(int i = 0; i< n; i++) {
-			if(isErased[i]) continue;
-			if(parents[i] != -1) isParentNode[parents[i]] = true;
-		}
-		
-		int answer = 0;
-		for(int i = 0; i < n; i++) {
-			if(!isErased[i] && !isParentNode[i] ) answer++; 
-		}
+		//count leaf
+		count(root);
 		
 		System.out.println(answer);
 	}
-	
-	private static void erase(int node) {
-		for(int i = 0; i < n; i++) {
-			if(isErased[i]) continue;
-			if(parents[i] == node) {
-				erase(i);
+	//eraseNum 자식들 제거
+	public static void erase(int cur, int target) {
+		for(int i = 0; i < children[cur].size(); i++) {
+			if(children[cur].get(i)  == target) {
+				children[cur].remove(i);
+				break;
 			}
+			else {
+				erase(children[cur].get(i), target);
+			}
+		}	
+		return;	
+	}
+	
+	//count
+	public static void count(int num) {
+		if(num != eraseNum && children[num].size() == 0) {
+			answer++;
+			return;
 		}
 		
-		isErased[node] = true;
+		for(int i = 0; i < children[num].size(); i++) {
+			count(children[num].get(i));
+		}
 	}
 }
