@@ -1,125 +1,145 @@
-//
 import java.io.*;
 import java.util.*;
-
+//하드코딩에대해 이쁘게할 필요가 있다.
 public class Main {
-	public static int n, m, zeroCnt, minZeroCnt;
-	public static int[][] room;
-	public static int[][] tmp;
-	public static int[] dy = { -1, 0, 1, 0 }; //상하좌우 -> 상우하좌
-	public static int[] dx = { 0, 1, 0, -1 }; //상우하좌
-	public static List<int[]> cctvs;
-	public static List<Integer> dirs;
-//		public static List<List<int[]>>[] cctv; 
-//		cctv = new List[6];
-
+	public static int n, m, minSagak, count;
+	
+	public static int[][] map;
+	public static List<CCTV> cctvs; //타입, 좌표를 담는다.
+	
+	public static int[] dy = {-1,0,1,0}; //상우하좌
+	public static int[] dx = {0,1,0,-1};
+	
 	public static void main(String[] args) throws IOException{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		StringBuilder sb = new StringBuilder();
 		StringTokenizer st;
-		
 		st = new StringTokenizer(br.readLine());
+		
 		n = Integer.parseInt(st.nextToken());
 		m = Integer.parseInt(st.nextToken());
-		room = new int[n][m];
-		tmp = new int[n][m];
-		cctvs = new ArrayList<int[]>();
-		dirs = new ArrayList<Integer>();
-		minZeroCnt = Integer.MAX_VALUE;
+		
+		map = new int[n][m];
+		cctvs = new ArrayList<>();
 		
 		for(int i = 0; i < n; i++) {
 			st = new StringTokenizer(br.readLine());
-			for(int j = 0; j < m; j++) {
-				room[i][j] = tmp[i][j] = Integer.parseInt(st.nextToken());
-				if(room[i][j] >=1 && room[i][j] <= 5) cctvs.add(new int[] {i, j}); 
-				if(room[i][j] == 0) zeroCnt++;
-			}
-		}
-//		System.out.println("zeroCnt : "+zeroCnt);
-		getDirections(0);
-		System.out.println(minZeroCnt);
-		
-	}
-	
-	//4가지 상태 방향.
-	private static void getDirections(int depth) {
-		if(depth == cctvs.size()) {
-			bfs();
-			//출력
-//			for(int i = 0; i < n; i++) {
-//				for(int j = 0; j <m; j++) {
-//					System.out.print(tmp[i][j]+" ");
-//				}
-//				System.out.println();
-//			}
-//			System.out.println("------------");
-//			
-			//출력끝
-			//탐색 끝내고 방 복구
-			for(int i = 0; i < n; i++) {
-				for(int j = 0; j < m; j++) {
-					tmp[i][j] = room[i][j];
+			for(int j = 0; j < m ; j++) {
+				map[i][j] = Integer.parseInt(st.nextToken());
+				if(map[i][j] != 0 && map[i][j] != 6) {
+					cctvs.add(new CCTV(map[i][j], i, j));
 				}
 			}
+		}
+		//input done
+		
+		//init
+		minSagak = Integer.MAX_VALUE;
+		
+		//재귀적으로 4^8가지의 경우의 수 탐색
+		go(0);
+		
+		System.out.println(minSagak);
+	}
+	
+	private static void go(int depth) {
+		if(depth == cctvs.size()) {
 
+			//사각지대 세기
+			int sagak = 0;
+			for(int i = 0; i < n; i++) {
+				for(int j = 0; j < m ; j++) {
+					if(map[i][j] == 0) sagak++; 
+				}
+			}
+			if(minSagak > sagak) minSagak = sagak; 
 			return;
 		}
-
 		
-		for(int i = 0; i < 4; i++) {
-			dirs.add(i);
-			getDirections(depth+1);
-			dirs.remove(depth);
+		//cctv
+		CCTV cctv = cctvs.get(depth);
+		for(int dir = 0; dir < 4; dir++) {
+			if(cctv.type == 1) {
+				draw(cctv.y, cctv.x, dir, '-');
+			}
+			else if(cctv.type == 2) {
+				draw(cctv.y, cctv.x, dir, '-');
+				draw(cctv.y, cctv.x, (dir+2)%4, '-');
+			}
+			else if(cctv.type == 3) {
+				draw(cctv.y,cctv.x, dir, '-');
+				draw(cctv.y,cctv.x, (dir+1)%4, '-');
+			}
+			else if(cctv.type == 4) {
+				draw(cctv.y,cctv.x, dir, '-');
+				draw(cctv.y,cctv.x, (dir+1)%4, '-');
+				draw(cctv.y,cctv.x, (dir+2)%4, '-');
+			}
+			else if(cctv.type == 5) {
+				draw(cctv.y,cctv.x, dir, '-');
+				draw(cctv.y,cctv.x, (dir+1)%4, '-');
+				draw(cctv.y,cctv.x, (dir+2)%4, '-');
+				draw(cctv.y,cctv.x, (dir+3)%4, '-');
+			}
+			else{
+				System.out.println("잘못된 입력");
+			}
+			go(depth+1);
+			if(cctv.type == 1) {
+				draw(cctv.y, cctv.x, dir, '+');
+			}
+			else if(cctv.type == 2) {
+				draw(cctv.y,cctv.x, dir, '+');
+				draw(cctv.y,cctv.x, (dir+2)%4, '+');
+			}
+			else if(cctv.type == 3) {
+				draw(cctv.y,cctv.x, dir, '+');
+				draw(cctv.y,cctv.x, (dir+1)%4, '+');
+			}
+			else if(cctv.type == 4) {
+				draw(cctv.y,cctv.x, dir, '+');
+				draw(cctv.y,cctv.x, (dir+1)%4, '+');
+				draw(cctv.y,cctv.x, (dir+2)%4, '+');
+			}
+			else if(cctv.type == 5) {
+				draw(cctv.y,cctv.x, dir, '+');
+				draw(cctv.y,cctv.x, (dir+1)%4, '+');
+				draw(cctv.y,cctv.x, (dir+2)%4, '+');
+				draw(cctv.y,cctv.x, (dir+3)%4, '+');
+			}
+			else{
+				System.out.println("잘못된 입력");
+			}
+			
+			if(cctv.type == 2) dir += 2;
+			if(cctv.type == 5) break;
 		}
 	}
 	
-	private static void bfs() {
-		Queue<int[]> q = new ArrayDeque<int[]>();
-		int tmpZeroCnt = zeroCnt;
-//		System.out.println("before tmpZeroCnt : "+tmpZeroCnt);
-		//cctv정점들 방향정해서 넣어주기.
-		for(int i = 0; i< cctvs.size(); i++) {
-			if(tmp[cctvs.get(i)[0]][cctvs.get(i)[1]] == 1) {
-				//1방향
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], (1 + dirs.get(i))%4});
+	public static void draw(int y, int x, int dir, char c) {
+		int ny = y + dy[dir];
+		int nx = x + dx[dir];
+		while(ny >= 0 && ny < n && nx >= 0 && nx < m) {
+			if(map[ny][nx] == 6) break;
+			
+			if(c == '-') {
+				if(map[ny][nx] <= 0) map[ny][nx]--;
 			}
-			else if(tmp[cctvs.get(i)[0]][cctvs.get(i)[1]] == 2) {
-				//2방향
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], (1 + dirs.get(i))%4});
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], (3 + dirs.get(i))%4});
+			else if(c == '+') {
+				if(map[ny][nx] <= 0) map[ny][nx]++;
 			}
-			else if(tmp[cctvs.get(i)[0]][cctvs.get(i)[1]] == 3) {
-				//2방향
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], (0 + dirs.get(i))%4});
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], (1 + dirs.get(i))%4});
-			}
-			else if(tmp[cctvs.get(i)[0]][cctvs.get(i)[1]] == 4) {
-				//3방향
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], (0 + dirs.get(i))%4});
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], (1 + dirs.get(i))%4});
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], (3 + dirs.get(i))%4});
-			}
-			else if(tmp[cctvs.get(i)[0]][cctvs.get(i)[1]] == 5) {
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], 0});
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], 1});
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], 2});
-				q.add(new int[] {cctvs.get(i)[0], cctvs.get(i)[1], 3});
-			}
+			ny = ny + dy[dir];
+			nx = nx + dx[dir];
 		}
-		
-		while(!q.isEmpty()) {
-			int cur[] = q.poll();
-			int ny = cur[0] + dy[cur[2]];
-			int nx = cur[1] + dx[cur[2]];
-			if(ny < 0 || nx < 0 || ny >= n || nx >= m || tmp[ny][nx] == 6) continue;
-			if(tmp[ny][nx] == 0) {
-				tmp[ny][nx] = -1;
-				tmpZeroCnt--;
-			}
-			q.add(new int[] {ny,nx, cur[2]});
-		}
-//		System.out.println("after tmpZeroCnt : "+tmpZeroCnt);
-		if(minZeroCnt > tmpZeroCnt) minZeroCnt = tmpZeroCnt;
-	}
 
+	}
+	
+	
+	public static class CCTV{
+		int type, y,x;
+		CCTV(int type, int y, int x){
+			this.type = type;
+			this.y = y;
+			this.x = x;
+		}
+	}
 }
