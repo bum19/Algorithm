@@ -1,62 +1,54 @@
-//import java.io.BufferedReader;
-//import java.io.IOException;
-//import java.io.InputStreamReader;
-//외판원 순회
-//순회므로 출발지점은 어디든 상관없다.
+import java.io.*;
 import java.util.*;
-//dp값 0으로 초기화되잇을거임. 안되있나 확인한번만
-//sc neverclosed
-public class Main{
-	public static final int NOROUTE = 16000001;
-	public static final int NOTVISIT = NOROUTE*2;
+//dp[00001][0] = 현재 0번노드에서 , 0번 노드를 거쳤을떄,  마저 노드들을 방문한후 0번노드에 도달하는 최소값
+//dp[11111][1] = 현재 1번노드에서, 01234번노드를 거쳤을떄, 마저 노드들을 방문한후 0번노드에 도달하는 최솟값.
+public class Main {
+	public static final int NOTVISIT = Integer.MAX_VALUE - 16000001; //아직 계산안함
+	public static final int NOROUTE = 16000001; //경로 없음으로 계산됨
 	public static int n;
-	public static int[][] w;
+	public static int[][] adj;
 	public static int[][] dp;
-	//visit는 현재까지 방문한정점목록, current는 현재 위치
-	//tsp의 리턴값 : 현재위치에서 출발점으로 돌아오는 최소경로
-	public static int tsp(int visit, int current) {
-//		System.out.println("tspstart");
-		//모든정점을 방문했을경우 
-		if(visit == (1<<n)-1) {
-			if(w[current][0] != 0) return w[current][0];
-			//그냥 NOTVISIT과 값을똑같이 줘버리면 경로가없는경우를 중복탐색하게됨.
-			else				   return NOROUTE;
-		}
-		
-		//메모이제이션. dp값이 존재하는 경우 for문탐색하지않는다.
-		if(dp[visit][current] != NOTVISIT) return dp[visit][current];
-		
-		//dfs탐색
-		for(int i = 0; i< n; i++) {
-			//만약 i노드 아직방문안했고, i로가는 경로가 있을경우 탐색 수행
-			if( (visit & (1 << i)) == 0 && w[current][i] != 0 ){
-				dp[visit][current] = Math.min(tsp(visit | (1<<i), i) + w[current][i], dp[visit][current]);
-			}					
-		}
-		
-		return dp[visit][current];
-	}
-	
-	
-	
-	public static void main(String[] args) {
-		Scanner sc = new Scanner(System.in);
-		n = sc.nextInt();
-		w = new int[n][n];
-		dp = new int[1<<n][n];
-		int result;
-		for(int i =0; i<n;i++) {
-			for(int j=0;j<n;j++) {
-				w[i][j] = sc.nextInt();
+	public static void main(String[] args) throws IOException{	
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		StringTokenizer st;
+		n = Integer.parseInt(br.readLine().trim());
+		adj = new int[n][n];
+		for(int i = 0 ; i < n ; i++) {
+			st = new StringTokenizer(br.readLine());
+			for(int j = 0; j < n; j ++) {
+				adj[i][j] = Integer.parseInt(st.nextToken());
+				if(adj[i][j] == 0 ) adj[i][j] = NOROUTE;
 			}
 		}
 		
-		//dp배열 값 최대값으로 초기화
-		for(int i = 0;i < dp.length;i++) {
+		//init
+		dp = new int[1 << n][n];
+		for(int i = 0 ; i < (1 <<n); i++) {
 			Arrays.fill(dp[i], NOTVISIT);
 		}
 		
-		result = tsp(1,0);
-		System.out.println(result);
+		for(int i = 1; i < n; i++) {
+			dp[(1 << n) - 1][i] = adj[i][0];
+		}
+		
+		System.out.println(recur(1 , 0));
+	}
+	
+	private static int recur(int visit, int cur) {
+		if(visit == (1 << n) - 1) return adj[cur][0];
+		
+		if(dp[visit][cur] != NOTVISIT) {
+			return dp[visit][cur];
+		}
+		
+		for(int i = 1; i < n; i++) {
+			if( (visit & (1 << i)) == 0 && adj[cur][i] != NOROUTE) { //방문한적 없다면
+				dp[visit][cur] = Math.min(dp[visit][cur], recur((visit | (1<<i)), i) + adj[cur][i]);
+			}
+			
+		}
+		//만약 NOTVISIT, NOROUTE값을 하나로 퉁치면, 이 for문작업이끝나고도, 같은값이 들어있어서, 위에 있는 if절에 안걸리고 다시 계싼하는 경우가 생길 수 있따.
+
+		return dp[visit][cur];
 	}
 }
