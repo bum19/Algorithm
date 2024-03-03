@@ -7,7 +7,7 @@ import java.util.*;
 public class Main {
 	
 	public static int n, m;
-	public static int[][] app;
+	public static App[] apps;
 	public static int[][] dp;
 	
 	public static void main(String[] args) throws IOException{
@@ -18,24 +18,27 @@ public class Main {
 		n = Integer.parseInt(st.nextToken());
 		m = Integer.parseInt(st.nextToken());
 		
-		app = new int[n+1][2]; //각 메모리크기, 코스트. 0번째는 마진값
+		apps = new App[n+1]; //각 메모리크기, 코스트. 0번째는 마진값
+		for(int i = 0; i <= n; i++) {
+			apps[i] = new App();
+		}
 		
 		//메모리크기 입력
 		st = new StringTokenizer(br.readLine());
 		for(int i = 1; i <= n; i++) {
-			app[i][0] = Integer.parseInt(st.nextToken());
+			apps[i].mem = Integer.parseInt(st.nextToken());
 		}
 		
 		//코스트입력
 		st = new StringTokenizer(br.readLine());
 		for(int i = 1; i <= n; i++) {
-			app[i][1] = Integer.parseInt(st.nextToken());
+			apps[i].cost = Integer.parseInt(st.nextToken());
 		}
 		
 		//최대 코스트 계산
 		int maxCost = 0;
 		for(int i = 1; i <= n; i++) {
-			maxCost += app[i][1];
+			maxCost += apps[i].cost;
 		}
 		
 		dp = new int[n+1][maxCost+1]; //0번째는 마진값
@@ -43,24 +46,15 @@ public class Main {
 		//dp 채우기
 		for(int i = 0; i <= n ; i++) {
 			for(int j = 0; j <= maxCost; j++) {
-//				System.out.println("done");
 				if(i == 0) continue;
-				
-				if(j - app[i][1] < 0) {
+				if(j - apps[i].cost < 0) {
 					dp[i][j] = dp[i-1][j];
 				}else {
-					dp[i][j] = Math.max(dp[i-1][j- app[i][1]] + app[i][0], dp[i-1][j]);
+					dp[i][j] = Math.max(dp[i-1][j- apps[i].cost] + apps[i].mem, dp[i-1][j]);
 				}
 			}
 		}
 
-//		for(int i = 0; i <= n; i ++) {
-//			for(int j = 0; j <= maxCost;j++) {
-//				System.out.print(dp[i][j] + " ");
-//			}
-//			System.out.println();
-//		}
-		
 		//최소되는 가격 찾기
 		for(int i = 0; i <= maxCost; i++) {
 			if(dp[n][i] >= m) {
@@ -68,5 +62,10 @@ public class Main {
 				return;
 			}
 		}
+	}
+	
+	private static class App{
+		int mem;
+		int cost;
 	}
 }
