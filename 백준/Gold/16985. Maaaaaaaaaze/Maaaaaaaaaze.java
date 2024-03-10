@@ -1,6 +1,10 @@
 import java.io.*;
 import java.util.*;
-
+/*
+ * 판을 돌리는 경우의수 4^5가지(하나 고정하고 돌려야 중복없어서 정확히는 4^4)
+ * 판을 쌓는 경우 5! (이것도 abcde 순서와 edcba가 같으므로 사실 나누기 2해야함)
+ * bfs 시간 5x5x5
+ */
 public class Main {
 	
 	public static int minMove;
@@ -31,7 +35,8 @@ public class Main {
 					plates[i][j][k] = Integer.parseInt(st.nextToken());
 				}
 			}
-		}	
+		}
+		
 		//init
 		minMove = Integer.MAX_VALUE;
 		
@@ -44,6 +49,7 @@ public class Main {
 	}
 	
 	private static void seqPerm(int depth) {
+		if(minMove == 12 ) return;
 		if(depth == 5) {
 			//순서정했으면, 돌려야지.
 			spinRecur(0);
@@ -60,16 +66,10 @@ public class Main {
 		}
 		
 	}
-	public static int cnt;
 	private static void spinRecur(int depth) {
+		if(minMove == 12 ) return;
 		if(depth == 5) {
-			cnt++;
-			//다 돌렸으면, 탐색. 출발가능한곳 4군데
-			bfs(0,0,0);
-			bfs(0,4,0);
-			bfs(0,0,4);
-			bfs(0,4,4);
-			
+			bfs(0,0,0); //어치파 돌리다보면 같은상황 생긴다.
 			return;
 		}
 		
@@ -80,16 +80,16 @@ public class Main {
 	}
 	
 	private static void bfs(int sz, int sy, int sx) {
-
 		//maze 탐색
 		//도착치는 4군데 가능.
-
 		int ez = 4;
 		int ey = sy == 0 ? 4 : 0;
 		int ex = sx == 0 ? 4 : 0;
+		
+		if(maze[sz][sy][sx] == 0 || maze[ez][ey][ex] == 0) return;
+		
 		isVisited = new boolean[5][5][5];
 		
-		if(maze[sz][sy][sx] == 0) return;
 		Queue<int[]> q = new ArrayDeque<int[]>();
 		
 		q.add(new int[] {sz,sy,sx, 0}); //좌표 및 이동횟수
@@ -97,7 +97,6 @@ public class Main {
 		while(!q.isEmpty()) {
 			int cur[] = q.poll();
 			if(cur[0] == ez && cur[1] == ey && cur[2] == ex) {
-				//비교하고, 리턴
 				if(minMove > cur[3]) minMove = cur[3];
 				return;
 				
