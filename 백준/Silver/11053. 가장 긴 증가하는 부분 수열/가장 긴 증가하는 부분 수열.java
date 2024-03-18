@@ -1,52 +1,45 @@
 import java.io.*;
 import java.util.*;
-
 /*
- * 수열 최대길이 N
- * 가능한 최대 숫자 A
- * dp[n][a] = n번째 숫자까지 포함했을때, 끝값이 a일때 최대 길이.
- * dp를 전부 채우는데 걸리는 시간 : O(NA)
- * dp에서 최대값을 찾는데 걸리는 시간 : O(NA)
- * 시간복잡도 : O(NA) 
+ * dp[i] = i번째수열까지 중 가장 긴 부분 수열의 길이
+ * dp[i] = Math.max(dp[k] + 1),  0 <= k < i,  arr[k] < arr[i] 
+ * 
+ * 기존에 내가 푼방식은, 한번 정렬을한뒤, 갱신하는 느낌 dp[i]를 덮어쓰는게 아닌, 다음 행에 쓰는 느낌.
+ * 거기에 존재하는 값만 인덱스에 넣은게 아니라, 죄다 넣음
+ * 보편적인 풀이 방법이라 생각함. 
  */
 public class Main {
 	public static int n;
 	public static int[] a;
-	public static int[][] dp;
+	public static int[] dp;
 	
 	public static void main(String[] args) throws IOException{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		StringTokenizer st;
-		n = Integer.parseInt(br.readLine());
-		a = new int[n+1]; //dp 시작을 위한 마진을 준다.
-		int max = -1;
 		
+		n = Integer.parseInt(br.readLine().trim());
+		a = new int[n];
+		dp = new int[n];
 		st = new StringTokenizer(br.readLine());
-		for(int i = 1; i <= n ; i++) {
+		for(int i = 0; i < n; i++) {
 			a[i] = Integer.parseInt(st.nextToken());
-			if(max < a[i]) max = a[i];
 		}
-
-		
-		dp = new int[n+1][max+1];
-		
-		for(int i = 1; i <= n; i++) {
-			int curMaxLen = 0;
-			
-			for(int val = 0; val <= max; val++) {
-				dp[i][val] = dp[i-1][val];
-				if(curMaxLen <= dp[i][val] && val < a[i]) curMaxLen = dp[i][val];
+//		현재 위치보다 이전 위치면서, 현재 위치의 값보다 적은 값을 가진 곳의 길이.		
+		for(int loc = 0; loc < n; loc++) {
+			int val = a[loc];
+			int maxLen = 0;
+			for(int i = 0; i < loc; i++) {
+				if(a[i] < val && dp[i] > maxLen) maxLen = dp[i];
 			}
-			
-			dp[i][a[i]] = Math.max(dp[i][a[i]], curMaxLen+1);
+			dp[loc] = maxLen+1;
 		}
 		
-		//최대길이 찾기
 		int answer = 0;
-		for(int i = 1; i <= n; i++) {
-			if(answer < dp[n][a[i]]) answer = dp[n][a[i]]; 
+		for(int i = 0; i < n; i++) {
+			if(answer < dp[i]) answer= dp[i];
 		}
 		
 		System.out.println(answer);
+
 	}
 }
