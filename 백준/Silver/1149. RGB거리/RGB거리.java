@@ -1,53 +1,46 @@
-//dp[idx][color] = min(dp[idx-1][diffColor1], dp[idx-1][diffColor2]);  //dp[idx][color] : idx번째 집을 color로 색칠할때의 최소비용.
 import java.io.*;
 import java.util.*;
+/*
+ * dp[i][0] = i위치까지 도달했을때 r색일경우 최댓값
+ * dp[i][1] = i위치까지 도달했을때 g색일경우 최댓값
+ * dp[i][2] = i위치까지 도달했을떄 b색일경우 최댓값
+ * 
+ * dp[i][0] = Math.min(arr[i][0] + dp[i-1][1], arr[i].r + dp[i-1][2])
+ * 
+ */
 public class Main {
-	public static int[][] dp; // i번째 집에 r,g,b를 칠할 때의 비용.
-	public static int n; //집의 개수
-	public static int[][] costs; // i번째 집에 r,g,b 비용.
-
+	public static int[] dpR, dpG, dpB;
+	public static int n;
+	
 	public static void main(String[] args) throws IOException{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		StringBuilder sb = new StringBuilder();
 		StringTokenizer st;
-		
 		n = Integer.parseInt(br.readLine().trim());
-		dp = new int[n][3];
-		costs = new int[n][3];
 		
-		for(int i = 0; i < n; i++) {
+		dpR = new int[n];
+		dpG = new int[n];
+		dpB = new int[n];
+		
+		for(int i = 0; i < n ; i++) {
 			st = new StringTokenizer(br.readLine());
-			costs[i][0] = Integer.parseInt(st.nextToken());
-			costs[i][1] = Integer.parseInt(st.nextToken());
-			costs[i][2] = Integer.parseInt(st.nextToken());
-		}
-		
-		System.out.println(Math.min(Math.min(calMinCost(n-1, 0), calMinCost(n-1, 1)), calMinCost(n-1,2)));
-	}
-	
-	private static int calMinCost(int idx, int color) { //현재 idx를 color색으로 칠할때의 최소 비용.
-		int preColor1, preColor2;
-		if(idx == 0) {
-			dp[idx][color] = costs[idx][color];
-		}
 			
-		if(color == 0) {
-			preColor1 = 1;
-			preColor2 = 2;
-		}
-		else if(color == 1) {
-			preColor1 = 0;
-			preColor2 = 2;
-		}
-		else {
-			preColor1 =  0;
-			preColor2 =  1;
+			int r = Integer.parseInt(st.nextToken());
+			int g = Integer.parseInt(st.nextToken());
+			int b = Integer.parseInt(st.nextToken());
+			
+			if(i == 0) {
+				dpR[i] = r;
+				dpG[i] = g;
+				dpB[i] = b;
+			}
+			else {
+				dpR[i] = Math.min(dpG[i-1]+r, dpB[i-1]+r);
+				dpG[i] = Math.min(dpR[i-1]+g, dpB[i-1]+g);
+				dpB[i] = Math.min(dpR[i-1]+b, dpG[i-1]+b);
+			}			
 		}
 		
-		if(dp[idx][color] == 0) {
-			dp[idx][color] = Math.min(calMinCost(idx-1,preColor1), calMinCost(idx-1,preColor2)) + costs[idx][color];
-		}
+		System.out.println(Math.min(dpR[n-1],  Math.min(dpG[n-1], dpB[n-1])));
 		
-		return dp[idx][color];
 	}
 }
