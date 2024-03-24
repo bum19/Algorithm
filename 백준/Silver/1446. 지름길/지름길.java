@@ -1,65 +1,57 @@
 import java.io.*;
 import java.util.*;
-/*
- * 지름길을 타거나, 안타거나 모든 경우 탐색
- * 지름길 최대 12개, 2^12승의 경우의 수 가능.
- * 풀이 방법은 생각났는데, 구현이 좀 더러움.
- * 
+/* 
+ * 진용이풀이
+ * dp[k] = 위치 k까지 도달할때 걸리는 가장 짧은 거리
+ * dp[k] = k까지 도달하는데 걸리는 최소길이
+ * 지름길을 끝나는 위치로 오름차순 정렬
+ * 끝나는 위치가 짧은 지름길부터 하나씩 적용후, 그 이후 dp값들 갱신
+ * 모든 지름길 다 탐색할때까지 반복
  */
+
 public class Main {
-	public static List<FastWay>[] fastWays;// 지름길, 인덱스는 지름길의 시작위치.
-	public static int n,d, minDist;
+	public static PriorityQueue<FastWay> fastWays; //지름길들 저장.
+	public static int dp[];
+	public static int n, d;
+	
 	public static void main(String[] args) throws IOException{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		StringTokenizer st;
-		st = new StringTokenizer(br.readLine());
 		
+		st = new StringTokenizer(br.readLine());
 		n = Integer.parseInt(st.nextToken());
 		d = Integer.parseInt(st.nextToken());
-		fastWays = new List[10001];
-		for(int i =0; i < n; i++) {
+		dp = new int[10001];
+		fastWays = new PriorityQueue<FastWay>( (fw1, fw2) -> {
+			return Integer.compare(fw1.end, fw2.end);
+		});
+		
+		
+		for(int i =0 ;i < n; i++) {
 			st = new StringTokenizer(br.readLine());
 			int start = Integer.parseInt(st.nextToken());
 			int end = Integer.parseInt(st.nextToken());
 			int dist = Integer.parseInt(st.nextToken());
-			
-			if(fastWays[start] == null) {
-				fastWays[start] = new ArrayList<>();
-			}
-			fastWays[start].add(new FastWay(start,end,dist));
+			fastWays.offer(new FastWay(start,end,dist));
 		}
 		//input done
 		
-		minDist = Integer.MAX_VALUE;
-		recur(0,0);
-		
-		System.out.println(minDist);
-		
-	}
-	
-	private static void recur(int curLoc, int curDist) {
-		if(curLoc >= d) {
-			if(curLoc == d && minDist > curDist) {
-				minDist = curDist;
-			}
-			return;
+		//init
+		for(int i = 0; i < 10001; i++) {
+			dp[i] = i;
 		}
 		
-		for(;curLoc < d; curLoc++) {
-			//지름길타기
-			if(fastWays[curLoc] != null) {
-				for(FastWay fw : fastWays[curLoc]) {
-					recur(fw.end, curDist + fw.dist);
-				}
-			}
+		while(!fastWays.isEmpty()) {
+			FastWay fw = fastWays.poll();
 			
-			//지름길 안타고 그냥 가기
-			curDist++;
+			dp[fw.end] = Math.min(dp[fw.end], dp[fw.start] + fw.dist);
+			
+			for(int i = fw.end; i <= d; i++) {
+				dp[i] = Math.min(dp[i], dp[fw.end] + (i-fw.end));
+			}
 		}
 		
-		if(minDist > curDist) {
-			minDist = curDist;
-		}
+		System.out.println(dp[d]);
 	}
 	
 	public static class FastWay{
@@ -72,4 +64,5 @@ public class Main {
 			this.dist = dist;
 		}
 	}
+	
 }
