@@ -39,7 +39,7 @@ public class Main {
 		
 		bfs();
 		
-		for(int i = 0; i < 2500; i++) {
+		for(int i = 0; i < 99; i++) {
 			if(visited[n-1][n-1][i]) {
 				System.out.println(i);
 				return;
@@ -49,7 +49,7 @@ public class Main {
 	
 	private static void bfs() {
 		Queue<int[]> q = new ArrayDeque<>();
-		visited = new boolean[n][n][2500];
+		visited = new boolean[n][n][99]; //흰색으로 바꿔서 갈수있는 검정색은 최대 98개다.
 		q.add(new int[] {0,0,0});
 		
 		while(!q.isEmpty()) {
@@ -67,7 +67,7 @@ public class Main {
 					q.add(new int[] {ny,nx,cur[2]});
 				}
 				else {
-					if (cur[2]+1 < 2500) {
+					if (cur[2]+1 < 99) {
 						q.add(new int[] {ny,nx,cur[2] + 1});
 					}
 				}
