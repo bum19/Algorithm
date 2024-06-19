@@ -40,6 +40,8 @@ public class Main {
 		
 		for(int i = 0; i < n;  i ++) {
 			String cur = words[i];
+			//maxM보다 적은길이의 단어 들어오면 스킵.
+			if(maxM >= cur.length()) continue;
 			int curM = 0;
 			int idx1 = i;
 			int idx2 = -1;
