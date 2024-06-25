@@ -1,11 +1,10 @@
 /*
- * 가중치가 음수가없고, 최솟값을 찾는것이므로 오른쪽, 아래만 가능한다고 생각했으나, 0이 가능함. dp 철회.
+ * 가중치가 음수가없고, 최솟값을 찾는것이므로 오른쪽, 아래만 가능한다고 생각했으나, 0이있어서 불가능. dp 철회. 사실 0 아니어도 불가능
  * 다익스트라. 노드수 125*125, 간선수 125*125*4;
  */
 import java.io.*;
 import java.util.*;
-public class Main
-{
+public class Main{
 	public static final int INF = 2501;
 	public static int n;
 	public static int[][] map;
