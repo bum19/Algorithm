@@ -11,6 +11,7 @@ public class Main {
 	public static int[][] countries;
 	public static boolean[][] visited;
 	public static List<int[]> list;
+	public static Queue<int[]> q;
 	
 	public static int[] dy = {-1,0,1,0};
 	public static int[] dx = {0,1,0,-1};
@@ -34,14 +35,20 @@ public class Main {
 		int days = 0;
 		boolean isMoved = true;
 		list = new ArrayList<>();
+		q = new ArrayDeque<>();
+		visited = new boolean[n][n];
+		
 		while(isMoved) {
 			isMoved = false;
 			
-			visited = new boolean[n][n];
+			for(int i = 0; i < n; i++) {
+				Arrays.fill(visited[i], false);
+			}
+			
 			for(int i = 0; i < n; i++) {
 				for(int j = 0; j < n; j++) {
 					if(visited[i][j]) continue;
-					//열고 이동하
+					//연합 열기
 					open(i,j,list);
 					if(list.size() > 1) {
 						isMoved = true; //연합이 결성된적있으면 이동한적있음 처리
@@ -57,7 +64,6 @@ public class Main {
 	
 	private static void open(int y,int x, List<int[]> list) {
 		int total = 0;
-		Queue<int[]> q = new ArrayDeque<>();
 		visited[y][x] = true;
 		total += countries[y][x];
 		list.add(new int[] {y,x});
@@ -79,6 +85,7 @@ public class Main {
 		}
 		if(list.size() >1)
 			move(total, list);
+		q.clear();
 	}
 	
 	private static void move(int total, List<int[]> list) {
