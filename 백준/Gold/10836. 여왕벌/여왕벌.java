@@ -20,7 +20,6 @@ public class Main {
 		st = new StringTokenizer(br.readLine());
 		m = Integer.parseInt(st.nextToken());
 		n = Integer.parseInt(st.nextToken());
-		
 		arr = new int[2* m - 1];
 		
 		for(int i = 0; i < n; i++) {
@@ -28,7 +27,9 @@ public class Main {
 			int zero = Integer.parseInt(st.nextToken());
 			int one = Integer.parseInt(st.nextToken());
 			int two = Integer.parseInt(st.nextToken());
-			arr[zero] += 1;
+
+			if(zero < 2 * m -1)
+				arr[zero] += 1;
 //			arr[zero+one] -= 1;
 //			arr[zero+one] += 2;
 			if(zero + one < 2 * m -1)
