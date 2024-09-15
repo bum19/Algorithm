@@ -1,7 +1,7 @@
 /*
  * 블랙프라이데이
  * 완탐+ 이분탐
- * 
+ * 투포인터 + 이분탐
  */
 import java.io.*;
 import java.util.*;
@@ -9,11 +9,7 @@ import java.util.*;
 public class Main {
 	public static int n,c;
 	public static int[] products;
-	public static int[] arr;
-	public static boolean[] isSelected;
 	public static boolean isPossible;
-	public static Map<Integer, Integer> map;
-	public static Set<Integer> set;
 	
 	public static void main(String[] args) throws IOException{
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -32,42 +28,38 @@ public class Main {
 		
 		Arrays.sort(products);
 		
-		//1개 일때 이분탐
-		isSelected = new boolean[n];
-		arr = new int[3];
-		comb(0,0,0);
-		System.out.println(isPossible?1:0);
-	}
-	
-	private static void comb(int start, int depth, int curNum) {
-		if(isPossible)return;
-		
-		if(depth == 2) {
-			int target = c;
-			for(int i = 0; i < depth; i++) {
-				target -= arr[i];
-			}
-			if(find(target)) {
-				isPossible = true;
-			}
+		//1개 일때 이분탐색
+		if(find(-1,-1,c)) {
+			System.out.println(1);
 			return;
 		}
 		
-		for(int i = start; i < n; i++) {
-			if(products[i] + curNum < c) {
-				isSelected[i] = true;
-				arr[depth] = products[i]; 
-				comb(i+1, depth+1, products[i]+curNum);
-				isSelected[i] = false;
-			}
-			else if(products[i] + curNum == c) {
-				isPossible = true;
-				return;
-			}
-		}
+		//2~3개일 때 투포인터 + 이분탐색
+		System.out.println(twoPointer()?1:0);
+		
 	}
 	
-	private static boolean find(int target) {
+	private static boolean twoPointer() {
+		int left = 0, right = n-1;
+		while(left < right) {
+			int target = c;
+			if(target <  products[left]+ products[right]) {
+				right--;
+			}
+			else if(target > products[left] + products[right]) {
+				target -= products[left]+products[right];
+				if(find(left,right, target))
+					return true;
+				left++;
+			}
+			else {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private static boolean find(int a, int b, int target) {
 
 		int s = 0, e = n-1;
 		while(s<=e) {
@@ -79,7 +71,7 @@ public class Main {
 				e = mid-1;
 			}
 			else {
-				if(isSelected[mid]) return false;
+				if(mid == a || mid == b) return false;
 				return true;
 			}
 		}
