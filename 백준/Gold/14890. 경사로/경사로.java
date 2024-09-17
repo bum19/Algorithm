@@ -28,86 +28,57 @@ public class Main {
 		
 		int answer = 0;
 		for(int i = 0; i < n; i++) {
-			answer += check('x', i);
-			answer += check('y', i);
+			answer += check('>', i);
+			answer += check('v', i);
 		}
 		System.out.println(answer);
 	}
 	
 	private static int check(char dir, int start) {
+		int sx = 0, sy = 0, dy = 0, dx = 0;
+		if(dir == '>') {
+			sx = 0;
+			sy = start;
+			
+			dx = 1;
+			dy = 0;
+		}
+		if(dir == 'v') {
+			sx = start;
+			sy = 0;
+			
+			dx = 0;
+			dy = 1;
+		}
 		
 		int flatCnt = 1;
-		int pre;
-		
-		if(dir == 'x') {
-//			System.out.println(start+"->행 탐색 시작");
-			pre = board[start][0];
-			for(int i = 1; i < n; i++) {
-//				System.out.println(i+"번재 칸 탐색 , pre : "+pre+", cur :"+board[i][start]);
-				if(Math.abs(board[start][i] - pre) > 1) return 0;
-				if(board[start][i] > pre) { // 이전보다 높은 칸일경우 
-					if(flatCnt >= l) {
-						flatCnt = 1;
-						pre = board[start][i];
-					}
-					else {
-						return 0;
-					}
-				}
-				else if(board[start][i] < pre) { //이전보다 낮은 칸일 경우
-//					System.out.println(" pre > cur");
-					int tmp = board[start][i];
-					int idx = 0;
-					while(idx <l) {
-						if(i+idx >= n || board[start][i] != board[start][i+idx]) return 0;
-						idx++;
-					}
-					i = i + l -1;
-					flatCnt = 0; //현재위치까지 경사로가 설치되어있으므로 0으로 cnt
-					pre = board[start][i];
-//					System.out.println("i : "+i+", board[i][start] :"+board[i][start]);
-//					System.out.println("pre : " + pre);
-				}
-				else { //이전과 같은 칸일 경우
-					flatCnt++;
-				}
-			}
-		}
-		else{
-//			System.out.println(start+"v행 탐색 시작");
-			pre = board[0][start];
-			for(int i = 1; i < n; i++) {
-//				System.out.println(i+"번재 칸 탐색 , pre : "+pre+", cur :"+board[i][start]);
-				if(Math.abs(board[i][start] - pre) > 1) return 0;
-				if(board[i][start] > pre) { // 이전보다 높은 칸일경우 
-					if(flatCnt >= l) {
-						flatCnt = 1;
-						pre = board[i][start];
-					}
-					else {
-						return 0;
-					}
-				}
-				else if(board[i][start] < pre) { //이전보다 낮은 칸일 경우
-//					System.out.println(" pre > cur");
-					int idx = 0;
-					while(idx <l) {
-						if(i+idx >= n || board[i][start] != board[i+idx][start]) return 0;
-						idx++;
-					}
-					i = i + l - 1;
-					flatCnt = 0; //현재위치까지 경사로가 설치되어있으므로 0으로 cnt
-					pre = board[i][start];
-//					System.out.println("i : "+i+", board[i][start] :"+board[i][start]);
-//					System.out.println("pre : " + pre);
+		int pre = board[sy][sx];
 
+		for(int i = 1; i < n; i++) {
+			if(Math.abs(board[sy + i*dy][sx + i*dx] - pre) > 1) return 0;
+			if(board[sy + i*dy][sx + i*dx] > pre) { // 이전보다 높은 칸일경우 
+				if(flatCnt >= l) {
+					flatCnt = 1;
+					pre = board[sy + i * dy][sx + i * dx];
 				}
-				else { //이전과 같은 칸일 경우
-					flatCnt++;
+				else {
+					return 0;
 				}
 			}
+			else if(board[sy + i*dy][sx + i*dx] < pre) { //이전보다 낮은 칸일 경우
+				int idx = 0;
+				while(idx <l) {
+					if(i+idx >= n || board[sy + i*dy][sx + i*dx] != board[sy + (i+idx)*dy][sx + (i+idx)*dx]) return 0;
+					idx++;
+				}
+				i = i + l -1;
+				flatCnt = 0; //현재위치까지 경사로가 설치되어있으므로 0으로 cnt
+				pre = board[sy + i*dy][sx + i*dx];
+			}
+			else { //이전과 같은 칸일 경우
+				flatCnt++;
+			}
 		}
-		
 		return 1;
 	}
 }
