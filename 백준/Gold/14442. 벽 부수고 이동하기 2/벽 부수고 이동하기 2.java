@@ -1,10 +1,10 @@
 /*
  * bfs + visited를 벽부신 횟수 + 거리 만큼해서 적용
+ * - bfs특성상 특정칸에 i번 부신채로 방문할 때, 더적은 거리만큼 이동해서 방문할 수 없으므로, minDist -> visited로 수정 
  */
 import java.io.*;
 import java.util.*;
 public class Main {
-	public static final int INF = Integer.MAX_VALUE;
 	public static int[] dy = {-1,0,1,0};
 	public static int[] dx = {0,1,0,-1};
 	
@@ -19,7 +19,7 @@ public class Main {
 		k = Integer.parseInt(st.nextToken());
 		
 		boolean[][] map = new boolean[n][m];
-		int[][][] minDist = new int[n][m][k+1];
+		boolean[][][] visited = new boolean[n][m][k+1];
 		
 		for(int i = 0; i < n; i++) {
 			String tmp = br.readLine().trim();
@@ -33,26 +33,22 @@ public class Main {
 			}
 		}
 		
-		//init
-		for(int i = 0; i < n ; i++) {
-			for(int j = 0; j <m ;j++) {
-				Arrays.fill(minDist[i][j], INF);
-			}
-		}
-		
 		//sol
-		System.out.println(bfs(map, minDist));
+		System.out.println(bfs(map, visited));
 		
 	}
 	
-	private static int bfs(boolean[][] map, int[][][] minDist) {
+	private static int bfs(boolean[][] map, boolean[][][] visited) {
 		int n = map.length;
 		int m = map[0].length;
-		int k = minDist[0][0].length - 1;
+		int k = visited[0][0].length - 1;
 		
 		//queue for bfs
-		Queue<int[]> q = new ArrayDeque<>(); // element : y,x, curDist, breakNum; 
-		minDist[0][0][0] = 1;
+		Queue<int[]> q = new ArrayDeque<>(); // element : y,x, curDist, breakNum;
+		if(0 == n-1 && 0 == m-1) {
+			return 1;
+		}
+		visited[0][0][0] = true;
 		q.add(new int[] {0,0,1,0});
 		
 		
@@ -63,6 +59,7 @@ public class Main {
 			int x = cur[1];
 			int curDist = cur[2];
 			int breakNum = cur[3];
+//			System.out.println("("+ y+", "+ x + ") breakNum : "+breakNum+", curDist : " + curDist);
 			for(int dir = 0; dir < 4; dir++) {
 				int ny = y + dy[dir];
 				int nx = x + dx[dir];
@@ -71,29 +68,22 @@ public class Main {
 				//there is a wall
 				if(!map[ny][nx]) {
 					//check breakNum
-					if((breakNum < k) && (minDist[ny][nx][breakNum+1] > curDist+1)) {
-						minDist[ny][nx][breakNum+1] = curDist+1;
+					if((breakNum < k) && !visited[ny][nx][breakNum+1]) {
+						visited[ny][nx][breakNum+1] = true;
 						q.offer(new int[] {ny,nx,curDist+1, breakNum+1});
 					}
 				}
 				//there is not wall
 				else {
-					if(minDist[ny][nx][breakNum] > curDist+1) {
-						minDist[ny][nx][breakNum] = curDist+1;
+					if(!visited[ny][nx][breakNum]) {
+						if(ny == n-1 && nx == m-1) return curDist +1;
+						visited[ny][nx][breakNum] = true;
 						q.offer(new int[] {ny,nx,curDist+1,breakNum});
 					}
 				}
 			}
 		}
 		
-		//get answer
-		int answer = INF;
-		for(int i = 0; i <= k; i++) {
-			if(answer > minDist[n-1][m-1][i]) {
-				answer = minDist[n-1][m-1][i];
-			}
-		}
-		
-		return answer == INF?-1:answer;
+		return -1;
 	}
 }
